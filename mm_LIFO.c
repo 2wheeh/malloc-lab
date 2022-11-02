@@ -193,11 +193,11 @@ int mm_init(void)
      *       heap_listp                                             heap_listp                                   
      */
     if ((heap_listp = mem_sbrk(6*WSIZE)) == (void *)-1) return -1; 
-    PUT(heap_listp, 0);                                 /* Alignment padding (Unused) */
-    PUT(heap_listp + (1 * WSIZE), PACK(2*DSIZE, 1));        /* Prologue header */
+    PUT(heap_listp, 0);                                   /* Alignment padding (Unused) */
+    PUT(heap_listp + (1 * WSIZE), PACK(2*DSIZE, 1));      /* Prologue header */
     PUT(heap_listp + (2 * WSIZE), NULL);                  /* PRED of Prologue */
     PUT(heap_listp + (3 * WSIZE), NULL);                  /* SUCC of Prologue */    
-    PUT(heap_listp + (4 * WSIZE), PACK(2*DSIZE, 1));        /* Prologue footer */
+    PUT(heap_listp + (4 * WSIZE), PACK(2*DSIZE, 1));      /* Prologue footer */
     PUT(heap_listp + (5 * WSIZE), PACK(0, 1));            /* Eplilogue header */
     heap_listp += (DSIZE);
     free_listp = heap_listp;
@@ -213,15 +213,7 @@ int mm_init(void)
      *                  heap_listp                                      heap_listp          bp1 = free_listp              
      */
 
-    // #ifdef DEBUG
-    //     CHECKHEAP(); 
-    // #endif
-
     if (extend_heap(CHUNKSIZE/WSIZE) == NULL) return -1;
-
-    // #ifdef DEBUG
-    //     CHECKHEAP(); 
-    // #endif
 
     return 0;
 }
@@ -257,10 +249,6 @@ static void *extend_heap(size_t words)
     PUT(HDRP(bp), PACK(size, 0));           /* Free block header */
     PUT(FTRP(bp), PACK(size, 0));           /* Free block footer */
     PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1));   /* New epilogue header */
-
-    // #ifdef DEBUG
-    //     CHECKHEAP(); 
-    // #endif
 
     return coalesce(bp);
 }
