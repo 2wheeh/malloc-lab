@@ -226,19 +226,6 @@ int mm_init(void)
     return 0;
 }
 
-/*
- *
- */
-// static void transparent(void *bp){
-//          if (free_listp == NEXT_BLKP(bp)){                                 /* when next block is happend to the top of free list, */   
-//             PUT(SUCC_PTR(PRED_NODE(NEXT_BLKP(bp))), NULL);                 /* it means a successor ptr of it is pointing NULL. So we only have to care about predessecor of it */
-//             free_listp = PRED_NODE(NEXT_BLKP(bp));                         /* and must update free list top to bp */
-//         } 
-//         else{
-//             SUCC_NODE(PRED_NODE(NEXT_BLKP(bp))) = SUCC_NODE(NEXT_BLKP(bp)); /* make next block's predesseccor and successor point to each other */
-//             PRED_NODE(SUCC_NODE(NEXT_BLKP(bp))) = PRED_NODE(PREV_BLKP(bp)); 
-//         }
-// }
 
 /*
  * delete_node - disconnect a free block from linked list. 
@@ -271,12 +258,6 @@ static void *extend_heap(size_t words)
     PUT(FTRP(bp), PACK(size, 0));           /* Free block footer */
     PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1));   /* New epilogue header */
 
-    // /* Initialize PRED/SUCC entries */
-    // PUT(PRED_PTR(bp), NULL);
-    // PUT(SUCC_PTR(bp), NULL);
-
-    /* Coalesce if the previous block was free */
-
     // #ifdef DEBUG
     //     CHECKHEAP(); 
     // #endif
@@ -307,7 +288,6 @@ static void *coalesce(void *bp)
     }
 
     else if (prev_alloc && !next_alloc) {                   /* Case 2 : next block is free already */ 
-        // delete_node(bp);
         if (free_listp == NEXT_BLKP(bp)){                   /* when next block is happend to the top of free list, */   
             PRED_NODE(bp) = PRED_NODE(NEXT_BLKP(bp));       /* it means a successor ptr of it is pointing NULL. So we only have to care about predessecor of it */
             PUT(SUCC_PTR(bp), NULL);
@@ -328,14 +308,14 @@ static void *coalesce(void *bp)
 
     }
 
-    else if (!prev_alloc && next_alloc) {                /* Case 3 */
+    else if (!prev_alloc && next_alloc) {                   /* Case 3 */
         size += GET_SIZE(HDRP(PREV_BLKP(bp)));
         PUT(FTRP(bp), PACK(size, 0));
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
         bp = PREV_BLKP(bp);
     }
 
-    else {                                               /* Case 4 */
+    else {                                                   /* Case 4 */
         delete_node(NEXT_BLKP(bp));
         size += GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(FTRP(NEXT_BLKP(bp)));
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
@@ -358,11 +338,7 @@ static void *find_fit(size_t asize)
     void *bp;
 
     for (bp = free_listp; GET_ALLOC(HDRP(bp)) != 1; bp = PRED_NODE(bp)){
-        if (asize <= GET_SIZE(HDRP(bp))) {
-        // printf("\nbp: %p, free_listp: %p\n", bp, free_listp);
-        return bp;
-        }
-            
+        if (asize <= GET_SIZE(HDRP(bp))) return bp;
     }
 
     return NULL; /* No fit */
@@ -395,10 +371,11 @@ void *mm_malloc(size_t size)
     /* No fit found. Get more memory and plack the block */
     extendsize = MAX(asize, CHUNKSIZE);
     if ((bp = extend_heap(extendsize/WSIZE)) == NULL) return NULL;
+    
     place(bp, asize);
+
     return bp;
 }
-
 
 /*
  * place - place a block at allocated area and set leftover as free block
@@ -416,7 +393,7 @@ static void place(void *bp, size_t asize)
         PRED_NODE(bp) = free_listp;             /* initialize PRED of leftover free block */
         PUT(SUCC_PTR(bp), NULL);                /* initialize SUCC of leftover free block */
         SUCC_NODE(free_listp) = bp;
-        free_listp = bp; 
+        free_listp = bp;                        /* the leftover be a new free list top */
     }
     else {
         PUT(HDRP(bp), PACK(csize, 1));          /* set hdr of allocted block */
@@ -429,10 +406,7 @@ static void place(void *bp, size_t asize)
  */
 void mm_free(void *bp)
 {   
-    // printf("free\n");
-    // #ifdef DEBUG
-    //     CHECKHEAP(); 
-    // #endif
+
     /* Ignore spurious reqs. */
     if (!bp) return ;
 
@@ -452,7 +426,6 @@ void mm_free(void *bp)
  */
 void *mm_realloc(void *ptr, size_t size)
 {   
-    // printf("realloc\n");
     void *oldptr = ptr;
     void *newptr;
     size_t copySize;
