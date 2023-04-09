@@ -1,3 +1,15 @@
+### Explicit으로 제출
+### **Explicit** 
+
+- **LIFO** 방식 으로 연결리스트 구현
+- **First-Fit** (LIFO top 부터 탐색)
+- **Coalescing** 발생 시 이미 **연결 리스트에 존재하는 free block을 리스트에서 빼지 않고 무조건 리스트 내에 남아서**, 새로 free 된 block이 붙는 방식으로 구현 
+-> 연결 리스트 bottom에 더 큰 block, top에 더 작은 block이 배치 
+-> **first-fit**으로 **best-fit**에 더 근접한 util 성능 기대했음
+
+- heap checker : for debugging
+
+```
 #####################################################################
 # CS:APP Malloc Lab
 # Handout files for students
@@ -49,4 +61,4 @@ The -V option prints out helpful tracing and summary information.
 To get a list of the driver flags:
 
 	unix> mdriver -h
-
+```
