@@ -1,4 +1,4 @@
-### Explicit으로 제출
+#### (Explicit으로 제출)
 ### **Explicit** 
 
 - **LIFO** 방식 으로 연결리스트 구현
